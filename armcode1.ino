@@ -1,3 +1,4 @@
+/* This is the code for cinderella's arm that is washing the floor. It repeatedly moves back and forth after sponge is placed on hand and for the whole time until trigger is placed to stop it */
 #include <Servo.h>  // Include the Servo library
 
 Servo servoMotor;  // Create a Servo object to control the servo motor
