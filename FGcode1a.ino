@@ -18,5 +18,5 @@ void loop() {
   if (touchState == HIGH) {
     Serial.println("Touched! Moving servo...");
     myServo.write(90);    // Move to "down" position
-    delay(2000);          // Hold down for 2 seconds
+    delay(2000);          // Hold down for 2 seconds... not sure if this is needed, we need to make circuit and test to make sure we include what we need.
 }
