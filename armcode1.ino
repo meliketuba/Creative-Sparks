@@ -4,8 +4,8 @@
 Servo servoMotor;  // Create a Servo object to control the servo motor
 
 int servoPin = 9;  // Pin where the servo is connected
-int startAngle = 0;  // Start position of the servo (0 degrees)
-int endAngle = 180;  // End position of the servo (180 degrees)
+int startAngle = 50;  // Start position of the servo (0 degrees)
+int endAngle = 150;  // End position of the servo (180 degrees)
 int delayTime = 1000;  // Delay between movements in milliseconds (1 second)
 
 void setup() {
