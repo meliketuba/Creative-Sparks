@@ -1,0 +1,46 @@
+#include <Servo.h>
+
+Servo fgServo;      // Fairy Godmother Servo
+Servo armServo;     // Cinderella's Arm Servo
+
+const int fgPin = 6;         // Fairy Godmother servo pin
+const int armPin = 9;        // Arm servo pin
+const int touchPin = 2;      // Touch sensor pin
+const int ledPin = 10;       // LED to indicate interaction
+
+bool fgActivated = false;
+
+void setup() {
+  fgServo.attach(fgPin);
+  armServo.attach(armPin);
+  pinMode(touchPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  fgServo.write(0);  // Start Fairy Godmother in "up"
+}
+
+void loop() {
+  int touchState = digitalRead(touchPin);
+
+  if (touchState == HIGH && !fgActivated) {
+    // Play LED cue only
+    digitalWrite(ledPin, HIGH);
+    delay(500);
+    digitalWrite(ledPin, LOW);
+
+    // Fairy Godmother flies down
+    fgServo.write(90);
+    delay(2000);
+    fgActivated = true; // Mark as used
+  }
+
+  if (!fgActivated) {
+    // Cinderella arm moves
+    armServo.write(0);
+    delay(1000);
+    armServo.write(180);
+    delay(1000);
+  } else {
+    // Stop arm once Fairy Godmother is activated
+    armServo.write(90); // Neutral position
+  }
+}
