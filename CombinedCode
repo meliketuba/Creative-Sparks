@@ -15,7 +15,7 @@ void setup() {
   armServo.attach(armPin);
   pinMode(touchPin, INPUT);
   pinMode(ledPin, OUTPUT);
-  fgServo.write(0);  // Start Fairy Godmother in "up"
+  fgServo.write(0);        // Start Fairy Godmother in "up"
 }
 
 void loop() {
