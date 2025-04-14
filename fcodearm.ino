@@ -1,7 +1,7 @@
 #include <Servo.h>  // Include the Servo library
 
 const int startSensorPin = 2;    // Start sensor (touch to start movement)
-const int servoPin = 9;          // Servo signal pin
+const int servoPin = 10;          // Servo signal pin
 const int startAngle = 50;       // Start angle for servo
 const int endAngle = 150;        // End angle for servo
 const int delayTime = 1000;      // Delay between movements in ms
