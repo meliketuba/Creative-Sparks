@@ -1,0 +1,36 @@
+#include <Servo.h>
+
+const int touchPin = 6;     // Copper tape touch sensor
+const int servoPin = 7;     // Servo control pin
+const int upAngle = 0;      // "Up" angle
+const int downAngle = 180;   // "Down" angle
+const int delayTime = 1000; // Delay between movements (ms)
+
+Servo myServo;
+
+void setup() {
+  pinMode(touchPin, INPUT);
+  myServo.attach(servoPin);
+  myServo.write(upAngle);  // Start at up position
+  Serial.begin(9600);
+}
+
+void loop() {
+  int touchState = digitalRead(touchPin);
+
+  if (touchState == HIGH) {
+    Serial.println("Touch detected — looping servo movement!");
+
+    // Loop movement while touch is held
+    while (digitalRead(touchPin) == HIGH) {
+      myServo.write(downAngle);
+      delay(delayTime);
+      myServo.write(upAngle);
+      delay(delayTime);
+    }
+
+    Serial.println("Touch released — servo stopped.");
+  }
+
+  delay(50); // Debounce delay
+}
