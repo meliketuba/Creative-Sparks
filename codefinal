@@ -1,0 +1,137 @@
+#include <Servo.h>  // Include the Servo library
+
+// ---- Pin Definitions ----
+const int bucketTouchPin = 2;    // Bucket touch sensor
+const int armSensorPin = 10;     // Arm movement start sensor
+const int armServoPin = 9;       // Servo pin for the arm
+const int fgTouchPin = 6;        // FG movement touch sensor
+const int fgServoPin = 7;        // Servo pin for FG
+const int spinTouchPin = 5;      // Pumpkin spin touch sensor
+const int spinServoPin = 3;      // Servo pin for pumpkin spin
+const int buttonPin = 4;         // LED button pin
+const int ledPin = 11;           // LED output pin
+
+// ---- Servo Positions & Delays ----
+const int armStartAngle = 50;
+const int armEndAngle = 150;
+const int armDelayTime = 1000;
+const int fgUpAngle = 0;
+const int fgDownAngle = 180;
+const int spinUpAngle = 0;
+const int spinDownAngle = 180;
+const int spinDelayTime = 1000;
+
+// ---- Variables ----
+Servo armServo, fgServo, spinServo;
+int moveCount = 0;
+bool armMoving = false;
+bool pumpkinActive = false;
+bool bucketTouched = false;
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Pin setup
+  pinMode(bucketTouchPin, INPUT);
+  pinMode(armSensorPin, INPUT);
+  pinMode(fgTouchPin, INPUT);
+  pinMode(spinTouchPin, INPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+
+  // Attach servos
+  armServo.attach(armServoPin);
+  fgServo.attach(fgServoPin);
+  spinServo.attach(spinServoPin);
+
+  // Set initial positions
+  armServo.write(armStartAngle);
+  fgServo.write(fgUpAngle);
+  spinServo.write(spinUpAngle);
+  
+  digitalWrite(ledPin, LOW);  // Start with LED off
+}
+
+void loop() {
+  // ---- Bucket Touch ----
+  int bucketTouchState = digitalRead(bucketTouchPin);
+  if (bucketTouchState == HIGH && !bucketTouched) {
+    bucketTouched = true;
+    Serial.println("Bucket Touch detected!");
+    triggerBucketArm();
+  } else if (bucketTouchState == LOW) {
+    bucketTouched = false;
+  }
+
+  // ---- Arm Movement ----
+  int armStartState = digitalRead(armSensorPin);
+  if (armStartState == HIGH && moveCount < 5 && !armMoving) {
+    Serial.println("Arm is moving...");
+    armMoving = true;
+    moveCount = 0;
+    moveArm();
+  }
+
+  if (moveCount >= 5) {
+    Serial.println("Arm movement completed.");
+    armServo.write(armStartAngle);
+    delay(1000); // Wait for 1 second
+    armMoving = false;
+  }
+
+  // ---- FG Movement ----
+  if (digitalRead(fgTouchPin) == HIGH) {
+    Serial.println("FG Touch detected — looping servo movement!");
+    while (digitalRead(fgTouchPin) == HIGH) {
+      fgServo.write(fgDownAngle);
+      delay(1000);
+      fgServo.write(fgUpAngle);
+      delay(1000);
+    }
+    Serial.println("FG Touch released — servo stopped.");
+  }
+
+  // ---- Pumpkin Spin ----
+  int spinTouchState = digitalRead(spinTouchPin);
+  if (spinTouchState == HIGH && !pumpkinActive) {
+    pumpkinActive = true;
+    Serial.println("Spin Touch detected — starting pumpkin spin!");
+    while (digitalRead(spinTouchPin) == HIGH) {
+      spinServo.write(spinDownAngle);
+      delay(spinDelayTime);
+      spinServo.write(spinUpAngle);
+      delay(spinDelayTime);
+    }
+    pumpkinActive = false;
+    Serial.println("Spin Touch released — stopping pumpkin spin.");
+  }
+
+  // ---- LED Button ----
+  int buttonState = digitalRead(buttonPin);
+  if (buttonState == HIGH) {
+    digitalWrite(ledPin, HIGH);   // Turn LED on
+    Serial.println("Button pressed — LED ON");
+  } else {
+    digitalWrite(ledPin, LOW);    // Turn LED off
+    Serial.println("Button released — LED OFF");
+  }
+
+  delay(50);  // Small delay for stability
+}
+
+// ---- Bucket Arm Trigger ----
+void triggerBucketArm() {
+  Serial.println(">>> Bucket Arm Triggered <<<");
+  // Implement the actual arm movement code here if needed
+}
+
+// ---- Arm Movement Function ----
+void moveArm() {
+  while (moveCount < 5) {
+    armServo.write(armStartAngle);
+    delay(armDelayTime); // Wait for the servo to reach the position
+    armServo.write(armEndAngle);
+    delay(armDelayTime); // Wait for the servo to reach the position
+    moveCount++;
+  }
+}
