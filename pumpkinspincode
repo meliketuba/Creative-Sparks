@@ -1,0 +1,47 @@
+const int spinTouchPin = 5;     // Touch sensor pin
+const int spinServoPin = 3;     // Servo pin
+const int spinUpAngle = 0;
+const int spinDownAngle = 180;
+const int spinDelayTime = 1000;
+
+#include <Servo.h>
+Servo spinServo;
+
+bool pumpkinActive = false;
+bool prevTouchState = LOW;
+
+void setup() {
+  pinMode(spinTouchPin, INPUT);
+  spinServo.attach(spinServoPin);
+  spinServo.write(spinUpAngle);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int currentTouchState = digitalRead(spinTouchPin);
+
+  // Detect rising edge: LOW to HIGH (touched)
+  if (currentTouchState == HIGH && prevTouchState == LOW && !pumpkinActive) {
+    pumpkinActive = true;
+    Serial.println("Spin Touch detected — starting pumpkin spin!");
+
+    // Spin the pumpkin 3 times (you can change the number)
+    for (int i = 0; i < 3; i++) {
+      spinServo.write(spinDownAngle);
+      delay(spinDelayTime);
+      spinServo.write(spinUpAngle);
+      delay(spinDelayTime);
+    }
+
+    Serial.println("Pumpkin spin done.");
+  }
+
+  // Reset flag once touch is released
+  if (currentTouchState == LOW && prevTouchState == HIGH) {
+    pumpkinActive = false;
+    Serial.println("Spin Touch released — ready for next spin.");
+  }
+
+  prevTouchState = currentTouchState;
+  delay(20); // Debounce delay
+}
