@@ -1,0 +1,139 @@
+#include <Servo.h>
+
+// === Feature 1: Servo moves 5 times back and forth on pin 9 ===
+const int startSensorPin = 2;
+const int servoPin1 = 9;
+const int startAngle1 = 40;
+const int endAngle1 = 100;
+const int delayTime1 = 1000;
+Servo servoMotor1;
+int moveCount = 0;
+bool movementStarted = false;
+
+// === Feature 2: One-touch up/down on servo pin 7 ===
+const int touchPin = 6;
+const int servoPin2 = 7;
+const int upAngle = 0;
+const int downAngle = 180;
+const int delayTime2 = 1000;
+Servo servoMotor2;
+int lastTouchState = LOW;
+
+// === Feature 3: Single switch move for servos on pin 3 & 4 ===
+const int switchPinServos = 11;
+const int servoPin3 = 3;
+const int servoPin4 = 4;
+const int targetAngle = 180;
+Servo servo3;
+Servo servo4;
+int lastSwitchStateServos = LOW;
+bool servosMoved = false;
+
+// === Feature 4: Toggle LED on pin 5 with switch on pin 12 ===
+const int switchPinLED = 12;
+const int ledPin = 5;
+bool ledState = false;
+int lastSwitchStateLED = LOW;
+
+void setup() {
+  // Feature 1 setup
+  pinMode(startSensorPin, INPUT);
+  servoMotor1.attach(servoPin1);
+
+  // Feature 2 setup
+  pinMode(touchPin, INPUT);
+  servoMotor2.attach(servoPin2);
+  servoMotor2.write(upAngle);
+
+  // Feature 3 setup
+  pinMode(switchPinServos, INPUT);
+  servo3.attach(servoPin3);
+  servo4.attach(servoPin4);
+  servo3.write(0);
+  servo4.write(0);
+
+  // Feature 4 setup
+  pinMode(switchPinLED, INPUT);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  handleFeature1();  // Sensor-triggered 5x servo movement
+  handleFeature2();  // Touch sensor single up/down
+  handleFeature3();  // Switch-triggered dual servo move
+  handleFeature4();  // LED toggle with switch
+
+  delay(10);  // Global debounce/stabilization
+}
+
+// === Feature 1 Logic: Move servo back/forth 5x ===
+void handleFeature1() {
+  int startState = digitalRead(startSensorPin);
+
+  if (startState == HIGH && moveCount < 5 && !movementStarted) {
+    Serial.println("Feature 1: Arm is moving...");
+    movementStarted = true;
+    moveCount = 0;
+
+    while (moveCount < 5) {
+      servoMotor1.write(startAngle1);
+      delay(delayTime1);
+      servoMotor1.write(endAngle1);
+      delay(delayTime1);
+      moveCount++;
+    }
+  }
+
+  if (moveCount >= 5 && movementStarted) {
+    Serial.println("Feature 1: Movement completed.");
+    servoMotor1.write(startAngle1);
+    delay(1000);
+    movementStarted = false;
+  }
+}
+
+// === Feature 2 Logic: One-touch servo bounce ===
+void handleFeature2() {
+  int touchState = digitalRead(touchPin);
+
+  if (touchState == HIGH && lastTouchState == LOW) {
+    Serial.println("Feature 2: Touch detected — servo bouncing.");
+    servoMotor2.write(downAngle);
+    delay(delayTime2);
+    servoMotor2.write(upAngle);
+    delay(delayTime2);
+  }
+
+  lastTouchState = touchState;
+}
+
+// === Feature 3 Logic: One-time move of two servos ===
+void handleFeature3() {
+  int switchState = digitalRead(switchPinServos);
+
+  if (switchState == HIGH && lastSwitchStateServos == LOW && !servosMoved) {
+    Serial.println("Feature 3: Switch pressed — servos moving.");
+    servo3.write(targetAngle);
+    servo4.write(targetAngle);
+    servosMoved = true;
+  }
+
+  lastSwitchStateServos = switchState;
+}
+
+// === Feature 4 Logic: LED toggle ===
+void handleFeature4() {
+  int switchState = digitalRead(switchPinLED);
+
+  if (switchState == HIGH && lastSwitchStateLED == LOW) {
+    ledState = !ledState;
+    digitalWrite(ledPin, ledState ? HIGH : LOW);
+    Serial.print("Feature 4: LED is now ");
+    Serial.println(ledState ? "ON" : "OFF");
+  }
+
+  lastSwitchStateLED = switchState;
+}
